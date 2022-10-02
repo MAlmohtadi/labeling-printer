@@ -1,4 +1,4 @@
-import {SET_ALERT, CLEAR_ERRORS} from '_actions/types';
+import {SET_ALERT, CLEAR_ERRORS} from '../actions/types';
 
 const initialState = {
   error: null,

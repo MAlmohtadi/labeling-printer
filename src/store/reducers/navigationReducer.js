@@ -1,6 +1,6 @@
 import {
   SCREEN_CHANGE
-} from '_actions/types';
+} from '../actions/types';
 
 const initialState = {
   routeName:"Home"
