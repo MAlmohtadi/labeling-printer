@@ -9,7 +9,7 @@ import MSSQL from 'react-native-mssql';
 import { connect } from 'react-redux';
 import { updateStoreConfig } from './store/actions/storeConfigActions'
 
-const StoreConfigPage = ({route, navigation, storeConfigReducer, updateStoreConfig }) => {
+const StoreConfigPage = ({ route, navigation, storeConfigReducer, updateStoreConfig }) => {
   const { server, username, password,
     database, store, isConnected } = storeConfigReducer
 
@@ -23,6 +23,7 @@ const StoreConfigPage = ({route, navigation, storeConfigReducer, updateStoreConf
       const result = await MSSQL.connect(config)
       if (result === 'Connection Successful!') {
         updateStoreConfig({ isConnected: true })
+        await MSSQL.close()
         navigation.push("CameraPage")
       } else {
         setMessage(result)
