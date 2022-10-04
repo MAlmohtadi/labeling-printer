@@ -119,7 +119,7 @@ const PermissionsPage = ({ navigation }) => {
     if (cameraPermissionStatus === 'authorized' && bluetoothPermission === PermissionsAndroid.RESULTS.GRANTED
       && bluetoothScanPermission === PermissionsAndroid.RESULTS.GRANTED && isBluetoothEnabled
       && locationPermission === PermissionsAndroid.RESULTS.GRANTED) {
-      navigation.replace('CameraPage')
+      navigation.replace('StoreConfigPage')
     };
   }, [cameraPermissionStatus,bluetoothPermission,bluetoothScanPermission,locationPermission,isBluetoothEnabled, navigation]);
 

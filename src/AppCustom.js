@@ -9,6 +9,7 @@ import CameraPage from './CameraPage';
 import ProductPage from './ProductPage';
 import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
+import StoreConfigPage from './StoreConfigPage';
 const Stack = createNativeStackNavigator();
 
 const AppCustom = () => {
@@ -69,8 +70,7 @@ const AppCustom = () => {
     || bluetoothPermission !== PermissionsAndroid.RESULTS.GRANTED
     || bluetoothScanPermission !== PermissionsAndroid.RESULTS.GRANTED
     || locationPermission !== PermissionsAndroid.RESULTS.GRANTED;
-  return (
-    <NavigationContainer>
+  return (<NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           // headerShown: false,
@@ -78,10 +78,11 @@ const AppCustom = () => {
           animation: 'slide_from_bottom',
           animationTypeForReplace: 'push',
         }}
-        initialRouteName={showPermissionsPage ? 'PermissionsPage' : 'CameraPage'}>
+        initialRouteName={showPermissionsPage ? 'PermissionsPage' : 'StoreConfigPage'}>
         <Stack.Screen name="PermissionsPage" component={PermissionsPage} options={{ headerShown: false }} />
-        <Stack.Screen name="CameraPage" component={CameraPage}  options={{ headerTitle: "قارئ الباركود" }} />
-        <Stack.Screen name="ProductPage" component={ProductPage} options={{ headerTitle: "معلومات المنتج" }}/>
+        <Stack.Screen name="StoreConfigPage" component={StoreConfigPage} options={{ headerTitle: "معلومات المتجر" }} />
+        <Stack.Screen name="CameraPage" component={CameraPage} options={{ headerTitle: "قارئ الباركود" }} />
+        <Stack.Screen name="ProductPage" component={ProductPage}  options={{ headerShown: false }} />
 
 
       </Stack.Navigator>

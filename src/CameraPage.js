@@ -4,11 +4,7 @@ import { useCameraDevices } from 'react-native-vision-camera';
 import { Camera, useFrameProcessor } from 'react-native-vision-camera';
 import { BarcodeFormat, scanBarcodes } from 'vision-camera-code-scanner';
 import Reanimated, {
-    useSharedValue,
-    runOnJS,
-    useDerivedValue,
-    useAnimatedReaction,
-    createAnimatedComponent
+    runOnJS
 } from 'react-native-reanimated';
 import BarcodeMask from 'react-native-barcode-mask';
 import { useIsForeground } from './hooks/useIsForeground';
@@ -34,7 +30,7 @@ const CameraPage = ({ navigation }) => {
     }, []);
 
     const onBarcodeDetected = useCallback((code) => {
-        navigation.push("ProductPage", { barcodes: code })
+        navigation.push("ProductPage", { barcode: code })
     }, [])
 
     const frameProcessor = useFrameProcessor((frame) => {
