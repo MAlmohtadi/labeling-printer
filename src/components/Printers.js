@@ -17,7 +17,7 @@ const Printer = () => {
     askForPermissions()
   }, [])
 
-  printTestLabel = async (printer) => {
+  const printLabel = async (printer) => {
     alert(`A test label is printed on ${printer.name}`);
 
     try {
@@ -36,7 +36,7 @@ const Printer = () => {
     }
   }
 
-  askForPermissions = async () => {
+  const askForPermissions = async () => {
     try {
       const isBluetoothEnabled = await RNZebraBluetoothPrinter
         .isEnabledBluetooth();
@@ -135,7 +135,7 @@ const Printer = () => {
           <TouchableOpacity
             key={printer.name}
             style={styles.container}
-            onPress={() => printTestLabel(printer)}>
+            onPress={() => printLabel(printer)}>
             <Text style={styles.text}>
               {printer.name}
             </Text>

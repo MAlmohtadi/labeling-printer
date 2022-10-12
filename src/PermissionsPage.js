@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid } from 'react-native';
+import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid, Android } from 'react-native';
 import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING } from './Constants';
 
@@ -9,126 +9,93 @@ import * as BANNER_IMAGE from './images/ZQ520.png';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
 
 const PermissionsPage = ({ navigation }) => {
-  const [cameraPermissionStatus, setCameraPermissionStatus] = useState('not-determined');
-  const [isBluetoothEnabled, setIsBluetoothEnabled] = useState(false)
-  const [bluetoothPermission, setBluetoothPermission] = useState('not-determined');
-  const [bluetoothScanPermission, setBluetoothScanPermission] = useState('not-determined');
-  const [locationPermission, setLocationPermission] = useState('not-determined');
-
-
+  const [isBluetoothEnabled, setIsBluetoothEnabled] = useState(false);
+  const [permissions, setPermissions] = useState({
+    'android.permission.BLUETOOTH_CONNECT': 'not-determined',
+    'android.permission.BLUETOOTH_SCAN': 'not-determined',
+    'android.permission.CAMERA': 'not-determined'
+  })
+  const [isLoading, setIsLoading] = useState(true);
   const requestCameraPermission = useCallback(async () => {
     console.log('Requesting camera permission...');
     const permission = await Camera.requestCameraPermission();
     console.log(`Camera permission status: ${permission}`);
 
     if (permission === 'denied') await Linking.openSettings();
-    setCameraPermissionStatus(permission);
+    setPermissions({ ...permissions, 'android.permission.CAMERA': permission });
   }, []);
 
-  const requestBluetoothConnectPermission = useCallback(async () => {
+  const requestBluetoothPermission = useCallback(async () => {
     console.log('Requesting BLUETOOTH_CONNECT permission...');
-    const permission = await PermissionsAndroid.request(
+    const res = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      {
-        title: "يرجى السماح بالاتصال بالبلوتوث",
-        message: `يرجى السماح بالاتصال بالبلوتوث حتى يتم الاتصال بالطابعة`,
-        buttonNeutral: "لاحقاً",
-        buttonNegative: "إلغاء",
-        buttonPositive: "موافق"
-      }
-    );
-    console.log(`BLUETOOTH_CONNECT permission status: ${permission}`);
-    if (permission === PermissionsAndroid.RESULTS.DENIED) await Linking.openSettings();
-    setBluetoothPermission(permission);
-  })
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
+    ])
+    console.log(`BLUETOOTH permissions status: ${res}`);
+    const keys = Object.keys(res);
+    for (const permission of keys) {
+      if (res[permission] === PermissionsAndroid.RESULTS.DENIED) await Linking.openSettings()
+    }
+    setPermissions({ ...permissions, ...res });
+  }, [JSON.stringify(permissions)]);
+
+  
   const requestLocationPermission = useCallback(async () => {
-    console.log('Requesting ACCESS_FINE_LOCATION permission...');
-    const permission = await PermissionsAndroid.request(
+    console.log('Requesting location permission...');
+    const res = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: "الوصول إلى الموقع الدقيق",
-        message: `يرجى السماح بالوصول إلى الموقع الدقيق حتى يتم البحث عن الطابعات المتاحة`,
-        buttonNeutral: "لاحقاً",
-        buttonNegative: "إلغاء",
-        buttonPositive: "موافق"
-      }
-    );
-    console.log(`ACCESS_FINE_LOCATION permission status: ${permission}`);
-    if (permission === 'denied') await Linking.openSettings();
-    setLocationPermission(permission);
-  })
-  const requestBluetoothScanPermission = useCallback(async () => {
-    console.log('Requesting BLUETOOTH_SCAN permission...');
-    const permission = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      {
-        title: "البحث بالبلوتوث",
-        message: `يرجى السماح بالبحث بالبلوتوث حتى يتم البحث عن الطابعات المتاحة`,
-        buttonNeutral: "لاحقاً",
-        buttonNegative: "إلغاء",
-        buttonPositive: "موافق"
-      }
-    );
-    console.log(`BLUETOOTH_SCAN permission status: ${permission}`);
-    if (permission === 'denied') await Linking.openSettings();
-    setBluetoothScanPermission(permission);
-  });
+      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION]);
+    console.log(`location permissions status: ${res}`);
+    const keys = Object.keys(res);
+    for (const permission of keys) {
+      if (res[permission] === PermissionsAndroid.RESULTS.DENIED) await Linking.openSettings()
+    }
+    setPermissions({ ...permissions, ...permission });
+  }, [JSON.stringify(permissions)]);
 
   const enableBluetooth = useCallback(async () => {
-    if (bluetoothPermission === PermissionsAndroid.RESULTS.GRANTED) {
-      await RNZebraBluetoothPrinter.enableBluetooth().then(setIsBluetoothEnabled);
+
+    try {
+      const enableBluetooth = await RNZebraBluetoothPrinter.enableBluetooth();
+      setIsBluetoothEnabled(enableBluetooth)
+    } catch (error) {
+      alert(JSON.stringify(error))
     }
-  })
+
+  }, [])
 
   useEffect(() => {
-    Camera.getCameraPermissionStatus().then(setCameraPermissionStatus);
-    RNZebraBluetoothPrinter
-      .isEnabledBluetooth().then(setIsBluetoothEnabled);
-    PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      {
-        title: "يرجى السماح بالاتصال بالبلوتوث",
-        message: `يرجى السماح بالاتصال بالبلوتوث حتى يتم الاتصال بالطابعة`,
-        buttonNeutral: "لاحقاً",
-        buttonNegative: "إلغاء",
-        buttonPositive: "موافق"
-      }
-    ).then(status => status && setBluetoothPermission(PermissionsAndroid.RESULTS.GRANTED));
+    const unsubscribe = navigation.addListener('focus', () => {
+      PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      ]).then(setPermissions);
+      RNZebraBluetoothPrinter
+        .isEnabledBluetooth().then(setIsBluetoothEnabled);
+    });
+    if (isBluetoothEnabled === 'enabled') {
+      RNZebraBluetoothPrinter
+        .isEnabledBluetooth().then(setIsBluetoothEnabled);
+    }
 
-    PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      {
-        title: "البحث بالبلوتوث",
-        message: `يرجى السماح بالبحث بالبلوتوث حتى يتم البحث عن الطابعات المتاحة`,
-        buttonNeutral: "لاحقاً",
-        buttonNegative: "إلغاء",
-        buttonPositive: "موافق"
-      }
-    ).then(status => status && setBluetoothScanPermission(PermissionsAndroid.RESULTS.GRANTED));
+    if (permissions[PermissionsAndroid.PERMISSIONS.CAMERA] === PermissionsAndroid.RESULTS.GRANTED
+      && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED
+      && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED
+      && permissions[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
+      && isBluetoothEnabled === true) {
+      navigation.replace('Root')
+    }
 
-    PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: "الوصول إلى الموقع الدقيق",
-        message: `يرجى السماح بالوصول إلى الموقع الدقيق حتى يتم البحث عن الطابعات المتاحة`,
-        buttonNeutral: "لاحقاً",
-        buttonNegative: "إلغاء",
-        buttonPositive: "موافق"
-      }
-    ).then(status => status && setLocationPermission(PermissionsAndroid.RESULTS.GRANTED));
-    if (cameraPermissionStatus === 'authorized' && bluetoothPermission === PermissionsAndroid.RESULTS.GRANTED
-      && bluetoothScanPermission === PermissionsAndroid.RESULTS.GRANTED && isBluetoothEnabled
-      && locationPermission === PermissionsAndroid.RESULTS.GRANTED) {
-      navigation.replace('StoreConfigPage')
-    };
-  }, [cameraPermissionStatus,bluetoothPermission,bluetoothScanPermission,locationPermission,isBluetoothEnabled, navigation]);
-
+    return unsubscribe;
+  }, [JSON.stringify(permissions), isBluetoothEnabled, navigation]);
   return (
     <View style={styles.container}>
       <Image source={require('./images/ZQ520.png')} style={styles.banner} />
       <Text style={styles.welcome}>أهلا بك في برنامج طباعة المتاجر</Text>
       <View style={styles.permissionsContainer}>
-        {cameraPermissionStatus !== 'authorized' && (
+        {permissions[PermissionsAndroid.PERMISSIONS.CAMERA] !== PermissionsAndroid.RESULTS.GRANTED && (
           <Text style={styles.permissionText}>
             {` يتطلب البرنامج استخدام`}<Text style={styles.bold}>الكاميرا</Text>.{' '}
             <Text style={styles.hyperlink} onPress={requestCameraPermission}>
@@ -136,23 +103,18 @@ const PermissionsPage = ({ navigation }) => {
             </Text>
           </Text>
         )}
-        {bluetoothPermission !== PermissionsAndroid.RESULTS.GRANTED && (
-          <Text style={styles.permissionText}>
-            {`يتطلب البرنامج استخدام`}<Text style={styles.bold}>البلوتوث</Text>.{' '}
-            <Text style={styles.hyperlink} onPress={requestBluetoothConnectPermission}>
-              السماح
+        {(permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] !== PermissionsAndroid.RESULTS.GRANTED
+          || permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] !== PermissionsAndroid.RESULTS.GRANTED)
+          && (
+            <Text style={styles.permissionText}>
+              {`يتطلب البرنامج استخدام`}<Text style={styles.bold}>البلوتوث</Text>.{' '}
+              <Text style={styles.hyperlink} onPress={requestBluetoothPermission}>
+                السماح
+              </Text>
             </Text>
-          </Text>
-        )}
-        {bluetoothScanPermission !== PermissionsAndroid.RESULTS.GRANTED && (
-          <Text style={styles.permissionText}>
-            {`يتطلب البرنامج استخدام`}<Text style={styles.bold}>البحث بالبلوتوث</Text>.{' '}
-            <Text style={styles.hyperlink} onPress={requestBluetoothScanPermission}>
-              السماح
-            </Text>
-          </Text>
-        )}
-        {locationPermission !== PermissionsAndroid.RESULTS.GRANTED && (
+          )}
+
+        {permissions[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] !== PermissionsAndroid.RESULTS.GRANTED && (
           <Text style={styles.permissionText}>
             {`يتطلب البرنامج استخدام`}<Text style={styles.bold}>البحث بالموقع</Text>.{' '}
             <Text style={styles.hyperlink} onPress={requestLocationPermission}>
@@ -160,7 +122,7 @@ const PermissionsPage = ({ navigation }) => {
             </Text>
           </Text>
         )}
-        {bluetoothPermission == PermissionsAndroid.RESULTS.GRANTED && !isBluetoothEnabled && (
+        {isBluetoothEnabled !== 'enabled' && (
           <Text style={styles.permissionText}>
             {`يتطلب البرنامج تفعيل`}<Text style={styles.bold}>البلوتوث</Text>.{' '}
             <Text style={styles.hyperlink} onPress={enableBluetooth}>

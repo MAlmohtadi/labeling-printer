@@ -1,4 +1,4 @@
-import { UPDATE_STORE_CONFIG } from '../actions/types';
+import { UPDATE_SETTINGS } from '../actions/types';
 
 const initialState = {
   server: '',
@@ -6,12 +6,13 @@ const initialState = {
   password: '',
   database: '',
   store: '',
+  printerAddress:'',
   isConnected: false
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case UPDATE_STORE_CONFIG:
+    case UPDATE_SETTINGS:
       return { ...state, ...action.payload };
     default:
       return state;

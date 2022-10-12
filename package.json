@@ -7,11 +7,15 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "link":"react-native link react-native-vector-icons",
+    "unlink":"react-native unlink react-native-vector-icons"
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
     "@react-native-community/async-storage": "^1.12.1",
+    "@react-navigation/bottom-tabs": "^6.4.0",
+    "@react-navigation/drawer": "^6.5.0",
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/native-stack": "^6.9.0",
     "@rneui/base": "^4.0.0-rc.6",

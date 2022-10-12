@@ -1,14 +1,10 @@
 import {combineReducers} from 'redux';
 import alertReducer from './alertReducer';
-import printerReducer from './printerReducer';
-import itemReducer from './itemReducer';
-import storeConfigReducer from './storeConfigReducer';
+import settingsReducer from './settingsReducer';
 import navigationReducer from './navigationReducer';
 
 export default combineReducers({
   alertReducer,
-  printerReducer,
-  itemReducer,
-  storeConfigReducer,
+  settingsReducer,
   navigationReducer,
 });

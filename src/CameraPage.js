@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { useCameraDevices } from 'react-native-vision-camera';
-import { Camera, useFrameProcessor } from 'react-native-vision-camera';
+import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
 import { BarcodeFormat, scanBarcodes } from 'vision-camera-code-scanner';
 import Reanimated, {
     runOnJS
@@ -30,7 +29,7 @@ const CameraPage = ({ navigation }) => {
     }, []);
 
     const onBarcodeDetected = useCallback((code) => {
-        navigation.push("ProductPage", { barcode: code })
+        navigation.navigate("ProductPage", { barcode: code })
     }, [])
 
     const frameProcessor = useFrameProcessor((frame) => {

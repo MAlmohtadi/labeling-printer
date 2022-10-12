@@ -13,9 +13,7 @@ const persistConfig = {
   storage: AsyncStorage,
   // Whitelist (Save Specific Reducers)
   whitelist: [
-    'storeConfigReducer',
-    'printerReducer',
-    'itemReducer',
+    'settingsReducer',
   ],
   // Blacklist (Don't Save Specific Reducers)
   blacklist: [],
