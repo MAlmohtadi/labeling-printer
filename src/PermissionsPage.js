@@ -1,19 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid, Android } from 'react-native';
-import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
+import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid } from 'react-native';
+import { Camera } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING } from './Constants';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-import * as BANNER_IMAGE from './images/ZQ520.png';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
+import BluetoothStateManager from 'react-native-bluetooth-state-manager';
 
 const PermissionsPage = ({ navigation }) => {
   const [isBluetoothEnabled, setIsBluetoothEnabled] = useState(false);
   const [permissions, setPermissions] = useState({
     'android.permission.BLUETOOTH_CONNECT': 'not-determined',
     'android.permission.BLUETOOTH_SCAN': 'not-determined',
-    'android.permission.CAMERA': 'not-determined'
+    'android.permission.CAMERA': 'not-determined',
+    'android.permission.ACCESS_FINE_LOCATION': 'not-determined'
   })
   const [isLoading, setIsLoading] = useState(true);
   const requestCameraPermission = useCallback(async () => {
@@ -23,7 +22,7 @@ const PermissionsPage = ({ navigation }) => {
 
     if (permission === 'denied') await Linking.openSettings();
     setPermissions({ ...permissions, 'android.permission.CAMERA': permission });
-  }, []);
+  }, [JSON.stringify(permissions)]);
 
   const requestBluetoothPermission = useCallback(async () => {
     console.log('Requesting BLUETOOTH_CONNECT permission...');
@@ -39,7 +38,7 @@ const PermissionsPage = ({ navigation }) => {
     setPermissions({ ...permissions, ...res });
   }, [JSON.stringify(permissions)]);
 
-  
+
   const requestLocationPermission = useCallback(async () => {
     console.log('Requesting location permission...');
     const res = await PermissionsAndroid.requestMultiple([
@@ -50,22 +49,24 @@ const PermissionsPage = ({ navigation }) => {
     for (const permission of keys) {
       if (res[permission] === PermissionsAndroid.RESULTS.DENIED) await Linking.openSettings()
     }
-    setPermissions({ ...permissions, ...permission });
+    setPermissions({ ...permissions, ...res });
   }, [JSON.stringify(permissions)]);
 
   const enableBluetooth = useCallback(async () => {
 
     try {
-      const enableBluetooth = await RNZebraBluetoothPrinter.enableBluetooth();
-      setIsBluetoothEnabled(enableBluetooth)
+      BluetoothStateManager.requestToEnable()
+        .then((res) => {
+          setIsBluetoothEnabled(true)
+        }).catch((err) => setIsBluetoothEnabled(false));
     } catch (error) {
       alert(JSON.stringify(error))
     }
 
-  }, [])
+  }, [JSON.stringify(permissions)]);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const unsubscribe = navigation.addListener('focus', async () => {
       PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
@@ -75,16 +76,12 @@ const PermissionsPage = ({ navigation }) => {
       RNZebraBluetoothPrinter
         .isEnabledBluetooth().then(setIsBluetoothEnabled);
     });
-    if (isBluetoothEnabled === 'enabled') {
-      RNZebraBluetoothPrinter
-        .isEnabledBluetooth().then(setIsBluetoothEnabled);
-    }
 
     if (permissions[PermissionsAndroid.PERMISSIONS.CAMERA] === PermissionsAndroid.RESULTS.GRANTED
       && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED
       && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED
       && permissions[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
-      && isBluetoothEnabled === true) {
+      && isBluetoothEnabled) {
       navigation.replace('Root')
     }
 
@@ -122,7 +119,7 @@ const PermissionsPage = ({ navigation }) => {
             </Text>
           </Text>
         )}
-        {isBluetoothEnabled !== 'enabled' && (
+        {!isBluetoothEnabled && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED && (
           <Text style={styles.permissionText}>
             {`يتطلب البرنامج تفعيل`}<Text style={styles.bold}>البلوتوث</Text>.{' '}
             <Text style={styles.hyperlink} onPress={enableBluetooth}>

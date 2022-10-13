@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { connect } from 'react-redux';
-import { CONTENT_SPACING, SAFE_AREA_PADDING } from './Constants';
 import MSSQL from 'react-native-mssql';
-import { Button, Card, Dialog, Text } from '@rneui/base';
+import { Button, Card, Divider, Text } from '@rneui/base';
 import Barcode from "react-native-barcode-builder";
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
+import { Dialog } from '@rneui/themed';
+
+import {  SAFE_AREA_PADDING } from './Constants';
 
 const ProductPage = ({ route, navigation, settingsReducer }) => {
-    const [product, setPrduct] = useState(null);
+    const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
     const getProductDetails = useCallback(async (barcode) => {
@@ -16,16 +18,16 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
         from items i , RecLine r, UnitCode u, ItemNameDbl iD, Units un
         where  r.ItemCode = i.ItemcodeSeq and r.BranchNo = ${settingsReducer.store}
         and u.ItemCodeSeq = r.ItemCode and u.BranchNo = ${settingsReducer.store} and iD.BarCode = u.Unit1Code  
-        and un.UnitID = u.UnitID and u.Unit1Code = '6291003204579' order by i.ItemcodeSeq`
+        and un.UnitID = u.UnitID and u.Unit1Code = '${barcode}' order by i.ItemcodeSeq`
 
 
         try {
             await MSSQL.connect(settingsReducer);
             const result = await MSSQL.executeQuery(query);
             if (result && result.length > 0) {
-                setPrduct(result[0])
+                setProduct(result[0])
             } else {
-                setMessage('منتج غير معروف')
+                setMessage(`لم يتم العثور على المنتج الذي يحمل رقم باركود ${route.params?.barcode}`)
             }
             await MSSQL.close();
         } catch (error) {
@@ -57,34 +59,43 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            getProductDetails(route.barcode)
+            getProductDetails(route.params?.barcode)
         });
         return unsubscribe;
-    }, [navigation, route]);
+    }, [navigation, route, settingsReducer, product]);
 
     console.log('Product:', JSON.stringify(product))
+    console.log('Route:', JSON.stringify(route))
+    console.log('message:', JSON.stringify(message))
+    console.log('loading:', JSON.stringify(loading))
     return <View style={styles.container}>
         <View style={styles.productInfoContainer}>
-            {product && (<Card containerStyle={{ backgroundColor: '#eac500' }}>
-                <Card.Title>{product.name}</Card.Title>
-                <Barcode value={product.barcode} height={80} format="CODE128" />
-                <Text style={{ alignSelf: 'center' }}>{product.barcode}</Text>
-                <Text>{'\n'}</Text>
-                <Text style={{ alignSelf: 'center', fontWeight: 'bold', fontSize: 20 }}>{product.price} JD</Text>
-            </Card>)
+            {product
+                && (<><Card containerStyle={{ backgroundColor: '#eac500' }}>
+                    <Card.Title>{product.name}</Card.Title>
+                    <Barcode value={product.barcode} height={80} format="CODE128" />
+                    <Text style={{ alignSelf: 'center' }}>{product.barcode}</Text>
+                    <Text style={{ alignSelf: 'center', fontWeight: 'bold', fontSize: 32 }}>{product.price} JD</Text>
 
-            }
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', margin: 20 }}>
-                <Button title="طباعة" color="success" size="lg" onPress={printLabel} />
-                <Button title="رجوع" color='error' size="lg" onPress={() => navigation.goBack()} />
-            </View>
-
-            <Dialog isVisible={!loading && !product && message != null}
-                onBackdropPress={() => navigation.goBack()}>
-                <Dialog.Title title="حدث خطأ" />
-                <Text>{message}</Text>
-            </Dialog>
+                </Card>
+                    <View style={{ margin: 18 }}>
+                        <Divider />
+                        <Button title="طباعة" color="success" size="lg" onPress={printLabel} />
+                        {/* <Button title="رجوع" color='error' size="lg" onPress={() => navigation.goBack()} />  </View> */}
+                    </View>
+                </>)}
         </View>
+        <Dialog isVisible={loading}>
+            <Dialog.Loading />
+        </Dialog>
+        <Dialog isVisible={product == null && message != null} >
+            <Dialog.Title title="حدث خطأ" titleStyle={{ color: 'black' }} />
+            <Text>{message}</Text>
+            <Dialog.Actions>
+                <Dialog.Button title="العودة" onPress={() => navigation.goBack()} />
+            </Dialog.Actions>
+        </Dialog>
+
     </View >
 }
 
@@ -107,7 +118,9 @@ const styles = StyleSheet.create({
         ...SAFE_AREA_PADDING,
     },
     productInfoContainer: {
-        marginTop: CONTENT_SPACING * 2,
+        flex: 1,
+        justifyContent: 'space-around',
+        // marginTop: CONTENT_SPACING * 2,
     },
     productInfoText: {
         fontSize: 17,

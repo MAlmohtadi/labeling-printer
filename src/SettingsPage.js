@@ -105,14 +105,6 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
             <Dialog.Button title="إلغاء" onPress={() => setIsDiscoveringDialogVisible(false)} />
           </Dialog.Actions>
         </Dialog>
-        {/* </ScrollView> */}
-        {/* <Dialog
-          isVisible={isVisible}
-          onBackdropPress={clearError}
-        >
-          <Dialog.Title title="حدث خطأ" />
-          <Text>{message}</Text>
-        </Dialog> */}
       </ScrollView>
     </SafeAreaView >
   );

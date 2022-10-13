@@ -1,15 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
+import {  PermissionsAndroid } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
+import { Camera } from 'react-native-vision-camera';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
 
 import SettingsPage from './SettingsPage';
-import PrintersPage from './PrintersPage';
 import PermissionsPage from './PermissionsPage';
 import ProductPage from './ProductPage';
 import CameraPage from './CameraPage';
@@ -58,7 +57,7 @@ const AppCustom = () => {
       initialRouteName={showPermissionsPage ? 'PermissionsPage' : 'Root'}>
       <Stack.Screen name="PermissionsPage" component={PermissionsPage} options={{ headerShown: false }} />
       <Stack.Screen name="Root" component={Root} options={{ headerShown: false }} />
-
+      <Stack.Screen name="ProductPage" component={ProductPage} options={{ headerTitle: 'معلومات المنتج' }} />
 
     </Stack.Navigator>
   </NavigationContainer>)
@@ -85,7 +84,6 @@ function Root() {
 
       <Tab.Screen name="Settings" component={SettingsPage} options={{ headerTitle: 'الإعدادات' }} />
       <Tab.Screen name="ScanCamera" component={CameraPage} options={{ headerTitle: 'طباعة ليبل' }} />
-      <Tab.Screen name="ProductPage" component={ProductPage} options={{ headerTitle: 'معلومات المنتج' }} />
 
     </Tab.Navigator>
   );

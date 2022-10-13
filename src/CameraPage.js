@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
 import { BarcodeFormat, scanBarcodes } from 'vision-camera-code-scanner';
 import Reanimated, {
@@ -30,7 +30,7 @@ const CameraPage = ({ navigation }) => {
 
     const onBarcodeDetected = useCallback((code) => {
         navigation.navigate("ProductPage", { barcode: code })
-    }, [])
+    }, [frameProcessor])
 
     const frameProcessor = useFrameProcessor((frame) => {
         'worklet';
