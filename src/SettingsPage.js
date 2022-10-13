@@ -29,9 +29,7 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
     setSettingsForm({ ...settingsReducer });
   }, [navigation, settingsReducer])
   
-  const clearError = () => {
-    setMessage(null);
-  }
+
 
   const discoverPrinters = useCallback(async () => {
     await setIsDiscovering(true)
@@ -53,22 +51,22 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.permissionsContainer}>
-        <Input placeholder='عنوان الشبكة' value={settingsForm.server || server}
+        <Input placeholder='عنوان الشبكة' value={settingsForm.server}
           leftIcon={{ type: 'material-community', name: 'server' }}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, server: value })} />
-        <Input placeholder='اسم االمستخدم' value={settingsForm.username || username}
+        <Input placeholder='اسم االمستخدم' value={settingsForm.username}
           leftIcon={{ type: 'material-community', name: 'account' }}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, username: value })} />
-        <Input placeholder='كلمه السر' secureTextEntry value={settingsForm.password || password}
+        <Input placeholder='كلمه السر' secureTextEntry value={settingsForm.password}
           leftIcon={{ type: 'material-community', name: 'form-textbox-password' }}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, password: value })} />
-        <Input placeholder='اسم قاعدة البيانات' value={settingsForm.database || database}
+        <Input placeholder='اسم قاعدة البيانات' value={settingsForm.database}
           leftIcon={{ type: 'fontisto', name: 'shopping-pos-machine' }}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, database: value })} />
-        <Input placeholder='رقم المتجر/الفرع' value={settingsForm.store || store}
+        <Input placeholder='رقم المتجر/الفرع' value={settingsForm.store}
           leftIcon={{ type: 'material-community', name: 'store-marker' }}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, store: value })} />
-        <Input placeholder='عنوان الطابعة' value={settingsForm.printerAddress || printerAddress}
+        <Input placeholder='عنوان الطابعة' value={settingsForm.printerAddress}
           leftIcon={{ type: 'material-community', name: 'printer' }}
           rightIcon={<Icon type='material-community' name='printer-search' onPress={discoverPrinters} />}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, printerAddress: value })} />
