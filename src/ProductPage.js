@@ -7,7 +7,7 @@ import Barcode from "react-native-barcode-builder";
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
 import { Dialog } from '@rneui/themed';
 
-import {  SAFE_AREA_PADDING } from './Constants';
+import { SAFE_AREA_PADDING } from './Constants';
 
 const ProductPage = ({ route, navigation, settingsReducer }) => {
     const [product, setProduct] = useState(null);
@@ -37,19 +37,33 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     }, [])
 
     const printLabel = useCallback(async () => {
-        var fontwidth = 30;
-        var width = 300;
+        // const name = 'بندورة';
+        // const barcode = '1234';
+        let fontwidth = 36;
+        let width = 535;
         var lines = 3;
-        if (((product.name.length * fontwidth) / width) > lines)
+        if (((product.name.trim().length * fontwidth) / width) > lines)
             fontwidth = fontwidth - 2;
+        const barcodeLength = `${product.barcode}`.length
+        const barcodeCharacterWeight = Math.abs(barcodeLength - 10) * 12;
+        const shiftBarcode = barcodeLength > 10 ? 130 - barcodeCharacterWeight : 130 + barcodeCharacterWeight;
+        const nameLength = `${product.name}`.length
+        let nameStartPosition = width - Math.abs(nameLength - 39) * 10;
+        if (nameLength < 39) {
+            nameStartPosition = width - nameStartPosition
+        }
+        if (nameStartPosition > width) {
+            nameStartPosition = width
+        }
+
         try {
             const zpl = `^XA
-            ^CI28
-            ^CWZ,E:TT0003M_.TTF
-            ^FT120,30^PA0,1,1,1^A@N,${fontwidth},${fontwidth}^FD${product.name}^FS^CI0
-            ^BY3,3,95^FT162,166^BCN,,Y,N
-            ^FD>;${product.barcode}^FS
-            ^FT224,273^A0N,51,57^FB179,1,0,C^FH\^FD${product.price} JD^FS^XZ`
+            ^PW535
+            ^BY2,3,80^FT${shiftBarcode},142^BCN,,Y,N
+            ^FD${product.barcode}^FS
+            ^FO${nameStartPosition},5,2^A@N,34,,TT0003M_^TBN,${nameStartPosition},50^FH\^CI17^F8^FD${product.name.trim()}^FS^CI0
+            ^FT198,245^A0N,52,^FH\^FD${product.price} JD^FS
+            ^PQ1,0,1,Y^XZ`
             const isPrinted = await RNZebraBluetoothPrinter.print(settingsReducer.printerAddress, zpl)
             console.log(isPrinted)
         } catch (err) {
@@ -64,10 +78,6 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
         return unsubscribe;
     }, [navigation, route, settingsReducer, product]);
 
-    console.log('Product:', JSON.stringify(product))
-    console.log('Route:', JSON.stringify(route))
-    console.log('message:', JSON.stringify(message))
-    console.log('loading:', JSON.stringify(loading))
     return <View style={styles.container}>
         <View style={styles.productInfoContainer}>
             {product
@@ -81,7 +91,6 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
                     <View style={{ margin: 18 }}>
                         <Divider />
                         <Button title="طباعة" color="success" size="lg" onPress={printLabel} />
-                        {/* <Button title="رجوع" color='error' size="lg" onPress={() => navigation.goBack()} />  </View> */}
                     </View>
                 </>)}
         </View>

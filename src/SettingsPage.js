@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { SAFE_AREA_PADDING } from './Constants';
 
-import { Input, Button, Dialog, CheckBox, } from '@rneui/themed';
+import { Input, Button, Dialog, CheckBox, Text, } from '@rneui/themed';
 import MSSQL from 'react-native-mssql';
 import { connect } from 'react-redux';
 import { updateSettings } from './store/actions/settingsActions'
@@ -28,7 +28,7 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
   useEffect(() => {
     setSettingsForm({ ...settingsReducer });
   }, [navigation, settingsReducer])
-  
+
 
 
   const discoverPrinters = useCallback(async () => {
@@ -40,6 +40,7 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
       const pairedDevicesFiltered = pairedDevices.filter(device => device.class === 1664);
       const devices = found.filter(device => device.class === 1664);
       await setPrinters([...devices, ...pairedDevicesFiltered]);
+      // await setPrinters([...found, ...pairedDevices]);
     } catch (error) {
       alert(JSON.stringify(error))
     }
@@ -80,28 +81,31 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
           isVisible={isDiscoveringDialogVisible}
           onBackdropPress={() => setIsDiscoveringDialogVisible(false)}
         >
-          <Dialog.Title title="Select Preference" />
-          {printers.map((item, i) => (
-            <CheckBox
-              key={i}
-              title={item.address + ' ' + item.name}
-              containerStyle={{ backgroundColor: 'white', borderWidth: 0 }}
-              checkedIcon="dot-circle-o"
-              uncheckedIcon="circle-o"
-              checked={checked === i + 1}
-              onPress={() => setChecked(i + 1)}
-            />
-          ))}
+          <Dialog.Title title="الاجهزة المتاحة" />
+          <ScrollView>
+            {printers.map((item, i) => (
+              <CheckBox
+                key={i}
+                title={item.name + ' ' + item.address}
+                containerStyle={{ backgroundColor: 'white', borderWidth: 0 }}
+                checkedIcon="dot-circle-o"
+                uncheckedIcon="circle-o"
+                checked={checked === i + 1}
+                onPress={() => setChecked(i + 1)}
+              />
+            ))}
 
-          <Dialog.Actions>
-            <Dialog.Button
-              title="موافق"
-              onPress={() => {
-                setSettingsForm({  ...settingsForm, printerAddress: printers[checked - 1].address }); setIsDiscoveringDialogVisible(false)
-              }}
-            />
-            <Dialog.Button title="إلغاء" onPress={() => setIsDiscoveringDialogVisible(false)} />
-          </Dialog.Actions>
+            {printers.length === 0 && <Text>{`لم يتم العثور على اجهزة`}</Text>}
+            <Dialog.Actions>
+              <Dialog.Button
+                title="موافق"
+                onPress={() => {
+                  setSettingsForm({ ...settingsForm, printerAddress: printers[checked - 1].address }); setIsDiscoveringDialogVisible(false)
+                }}
+              />
+              <Dialog.Button title="إلغاء" onPress={() => setIsDiscoveringDialogVisible(false)} />
+            </Dialog.Actions>
+          </ScrollView>
         </Dialog>
       </ScrollView>
     </SafeAreaView >

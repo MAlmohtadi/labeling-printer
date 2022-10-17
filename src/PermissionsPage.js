@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid } from 'react-native';
+import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid, Platform } from 'react-native';
 import { Camera } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING } from './Constants';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
@@ -76,10 +76,11 @@ const PermissionsPage = ({ navigation }) => {
       RNZebraBluetoothPrinter
         .isEnabledBluetooth().then(setIsBluetoothEnabled);
     });
-
+    const isGrantedBluetooth = Platform.Version < 31
+      || (permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED
+        && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED)
     if (permissions[PermissionsAndroid.PERMISSIONS.CAMERA] === PermissionsAndroid.RESULTS.GRANTED
-      && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED
-      && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED
+      && isGrantedBluetooth
       && permissions[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
       && isBluetoothEnabled) {
       navigation.replace('Root')
@@ -100,7 +101,7 @@ const PermissionsPage = ({ navigation }) => {
             </Text>
           </Text>
         )}
-        {(permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] !== PermissionsAndroid.RESULTS.GRANTED
+        {Platform.Version > 30 && (permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] !== PermissionsAndroid.RESULTS.GRANTED
           || permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] !== PermissionsAndroid.RESULTS.GRANTED)
           && (
             <Text style={styles.permissionText}>
@@ -119,7 +120,7 @@ const PermissionsPage = ({ navigation }) => {
             </Text>
           </Text>
         )}
-        {!isBluetoothEnabled && permissions[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED && (
+        {!isBluetoothEnabled && (
           <Text style={styles.permissionText}>
             {`يتطلب البرنامج تفعيل`}<Text style={styles.bold}>البلوتوث</Text>.{' '}
             <Text style={styles.hyperlink} onPress={enableBluetooth}>
