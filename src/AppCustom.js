@@ -82,8 +82,8 @@ function Root() {
       })}
     >
 
-      <Tab.Screen name="Settings" component={SettingsPage} options={{ headerTitle: 'الإعدادات' }} />
-      <Tab.Screen name="ScanCamera" component={CameraPage} options={{ headerTitle: 'طباعة ليبل' }} />
+      <Tab.Screen name="Settings" component={SettingsPage} options={{ headerTitle: 'الإعدادات', tabBarLabel: 'الإعدادات',}} />
+      <Tab.Screen name="ScanCamera" component={CameraPage} options={{ headerTitle: 'طباعة ليبل',tabBarLabel: 'طباعة ليبل' }} />
 
     </Tab.Navigator>
   );
