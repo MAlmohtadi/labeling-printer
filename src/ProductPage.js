@@ -12,6 +12,7 @@ import { SAFE_AREA_PADDING } from './Constants';
 const ProductPage = ({ route, navigation, settingsReducer }) => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isDisabled, setIsDisabled] = useState(false);
     const [message, setMessage] = useState(null);
     const getProductDetails = useCallback(async (barcode) => {
         const query = `select iD.ItemNameDescription as name, u.Unit1Code as barcode, u.PriceVal as price
@@ -39,6 +40,7 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     const printLabel = useCallback(async () => {
         // const name = 'بوك جبنة مثلثات 24 قطعة 360 غم';
         // const barcode = '6281048106990';
+        await setIsDisabled(true);
         const { name, barcode } = product;
         let width = 500;
         const barcodeLength = `${barcode}`.length
@@ -51,7 +53,7 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
         if (fontBlock > width) {
             fontBlock = width
         }
-
+        alert("تم الإرسال الأمر للطابعة يرجى الإنتظار...")
         try {
             const zpl = `^XA
             ^PW535
@@ -61,8 +63,9 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
             ^FO${fontBlock + startText > width ? width : fontBlock + startText},5^AQN,28,^TBN,${width},100^PA1,1,1,1^FH\^CI17^F8^FD${name}^FS^CI0
             ^FT198,260^AQN,50,,TAH000^FD${product.price} JD^FS
             ^PQ1,0,1,Y^XZ`
-            const isPrinted = await RNZebraBluetoothPrinter.print(settingsReducer.printerAddress, zpl)
-            console.log(isPrinted)
+            RNZebraBluetoothPrinter.print(settingsReducer.printerAddress, zpl).then(result => {
+                setIsDisabled(false)
+            })
         } catch (err) {
             alert(err.message)
         }
@@ -87,7 +90,7 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
                 </Card>
                     <View style={{ margin: 18 }}>
                         <Divider />
-                        <Button title="طباعة" color="success" size="lg" onPress={printLabel} />
+                        <Button title="طباعة" color="success" size="lg" onPress={printLabel} disabled={isDisabled} />
                     </View>
                 </>)}
         </View>
