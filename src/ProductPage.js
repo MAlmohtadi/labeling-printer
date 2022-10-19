@@ -37,32 +37,29 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     }, [])
 
     const printLabel = useCallback(async () => {
-        // const name = 'بندورة';
-        // const barcode = '1234';
-        let fontwidth = 36;
-        let width = 535;
-        var lines = 3;
-        if (((product.name.trim().length * fontwidth) / width) > lines)
-            fontwidth = fontwidth - 2;
-        const barcodeLength = `${product.barcode}`.length
+        // const name = 'بوك جبنة مثلثات 24 قطعة 360 غم';
+        // const barcode = '6281048106990';
+        const { name, barcode } = product;
+        let width = 500;
+        const barcodeLength = `${barcode}`.length
         const barcodeCharacterWeight = Math.abs(barcodeLength - 10) * 12;
         const shiftBarcode = barcodeLength > 10 ? 130 - barcodeCharacterWeight : 130 + barcodeCharacterWeight;
-        const nameLength = `${product.name}`.length
-        let nameStartPosition = width - Math.abs(nameLength - 39) * 10;
-        if (nameLength < 39) {
-            nameStartPosition = width - nameStartPosition
-        }
-        if (nameStartPosition > width) {
-            nameStartPosition = width
+        const nameLength = `${name}`.length
+        const startText = Math.ceil(width / 2);
+        let fontBlock = nameLength * 10;
+
+        if (fontBlock > width) {
+            fontBlock = width
         }
 
         try {
             const zpl = `^XA
             ^PW535
-            ^BY2,3,80^FT${shiftBarcode},142^BCN,,Y,N
-            ^FD${product.barcode}^FS
-            ^FO${nameStartPosition},5,2^A@N,34,,TT0003M_^TBN,${nameStartPosition},50^FH\^CI17^F8^FD${product.name.trim()}^FS^CI0
-            ^FT198,245^A0N,52,^FH\^FD${product.price} JD^FS
+            ^CWQ,E:TAH000.TTF
+            ^BY2,3,70^FT${shiftBarcode},160^BCN,,Y,N
+            ^FD${barcode}^FS
+            ^FO${fontBlock + startText > width ? width : fontBlock + startText},5^AQN,28,^TBN,${width},100^PA1,1,1,1^FH\^CI17^F8^FD${name}^FS^CI0
+            ^FT198,260^AQN,50,,TAH000^FD${product.price} JD^FS
             ^PQ1,0,1,Y^XZ`
             const isPrinted = await RNZebraBluetoothPrinter.print(settingsReducer.printerAddress, zpl)
             console.log(isPrinted)
