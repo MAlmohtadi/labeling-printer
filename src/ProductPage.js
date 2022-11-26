@@ -15,12 +15,11 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     const [isDisabled, setIsDisabled] = useState(false);
     const [message, setMessage] = useState(null);
     const getProductDetails = useCallback(async (barcode) => {
-        const query = `select iD.ItemNameDescription as name, u.Unit1Code as barcode, u.PriceVal as price
-        from items i , RecLine r, UnitCode u, ItemNameDbl iD, Units un
-        where  r.ItemCode = i.ItemcodeSeq and r.BranchNo = ${settingsReducer.store}
-        and u.ItemCodeSeq = r.ItemCode and u.BranchNo = ${settingsReducer.store} and iD.BarCode = u.Unit1Code  
-        and un.UnitID = u.UnitID and u.Unit1Code = '${barcode}' order by i.ItemcodeSeq`
-
+        const query = `SELECT  dbo.UnitCode.Unit1Code, dbo.ItemNameDbl.ItemNameDescription, dbo.UnitCode.PriceVal, dbo.UnitCode.BranchNo
+                        FROM  dbo.UnitCode INNER 
+                        JOIN dbo.ItemNameDbl ON dbo.UnitCode.Unit1Code = dbo.ItemNameDbl.BarCode
+                        WHERE dbo.UnitCode.Unit1Code = '${barcode}'
+                        AND dbo.UnitCode.BranchNo = ${settingsReducer.store}`
 
         try {
             await MSSQL.connect(settingsReducer);
@@ -37,7 +36,7 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
         setLoading(false)
     }, [])
 
-    const printLabel = useCallback(async () => {
+    const printLabel = async () => {
         // const name = 'بوك جبنة مثلثات 24 قطعة 360 غم';
         // const barcode = '6281048106990';
         await setIsDisabled(true);
@@ -68,8 +67,9 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
             })
         } catch (err) {
             alert(err.message)
+            setIsDisabled(false)
         }
-    }, [product])
+    }
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
