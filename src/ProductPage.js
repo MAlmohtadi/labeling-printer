@@ -15,7 +15,7 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     const [isDisabled, setIsDisabled] = useState(false);
     const [message, setMessage] = useState(null);
     const getProductDetails = useCallback(async (barcode) => {
-        const query = `SELECT  dbo.UnitCode.Unit1Code, dbo.ItemNameDbl.ItemNameDescription, dbo.UnitCode.PriceVal, dbo.UnitCode.BranchNo
+        const query = `SELECT  dbo.UnitCode.Unit1Code as barcode, dbo.ItemNameDbl.ItemNameDescription as name, dbo.UnitCode.PriceVal as price
                         FROM  dbo.UnitCode INNER 
                         JOIN dbo.ItemNameDbl ON dbo.UnitCode.Unit1Code = dbo.ItemNameDbl.BarCode
                         WHERE dbo.UnitCode.Unit1Code = '${barcode}'
@@ -37,8 +37,8 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     }, [])
 
     const printLabel = async () => {
-        // const name = 'بوك جبنة مثلثات 24 قطعة 360 غم';
-        // const barcode = '6281048106990';
+        // const name = 'اوه بوي بيكويت بالنكهة الفانيلا 38 غم';
+        // const barcode = '6291003022852';
         await setIsDisabled(true);
         const { name, barcode } = product;
         let width = 500;
@@ -56,6 +56,8 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
         try {
             const zpl = `^XA
             ^PW535
+            ^LT020
+            ^LS0
             ^CWQ,E:TAH000.TTF
             ^BY2,3,70^FT${shiftBarcode},160^BCN,,Y,N
             ^FD${barcode}^FS
