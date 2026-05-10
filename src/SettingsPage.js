@@ -1,20 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView, NativeModules } from 'react-native';
 import { SAFE_AREA_PADDING } from './Constants';
-
 import { Input, Button, Dialog, CheckBox, Text, } from '@rneui/themed';
 import MSSQL from 'react-native-mssql';
 import { connect } from 'react-redux';
 import { updateSettings } from './store/actions/settingsActions'
 import { Icon } from '@rneui/base';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
+import { Picker } from '@react-native-picker/picker';
 
 const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) => {
   // const { theme } = useTheme();
   const { server, username, password,
-    database, store, printerAddress } = settingsReducer
+    database, store, printerAddress, printerType } = settingsReducer
   const [settingsForm, setSettingsForm] = useState({})
+  const printerTypes = ['طابعة zebra', 'طابعة xprinter']; // Add your printer types here
+
   const [printers, setPrinters] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDiscoveringDialogVisible, setIsDiscoveringDialogVisible] = useState(false);
@@ -22,7 +24,7 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
   const [message, setMessage] = useState();
   const [checked, setChecked] = useState(-1);
   const disableForm = settingsForm.server === server && settingsForm.username === username
-    && settingsForm.password === password && settingsForm.database === database
+    && settingsForm.password === password && settingsForm.database === database && settingsForm.printerType === printerType
     && settingsForm.store === store && settingsForm.printerAddress === printerAddress;
 
   useEffect(() => {
@@ -67,6 +69,16 @@ const SettingsPage = ({ route, navigation, settingsReducer, updateSettings }) =>
         <Input placeholder='رقم المتجر/الفرع' value={settingsForm.store}
           leftIcon={{ type: 'material-community', name: 'store-marker' }}
           onChangeText={(value) => setSettingsForm({ ...settingsForm, store: value })} />
+
+ <Picker
+          selectedValue={settingsForm.printerType}
+          onValueChange={(itemValue) => setSettingsForm({ ...settingsForm, printerType: itemValue })}
+       
+          style={styles.picker}>
+          {printerTypes.map((type, index) => (
+            <Picker.Item key={index} label={type} value={type} />
+          ))}
+        </Picker>
         <Input placeholder='عنوان الطابعة' value={settingsForm.printerAddress}
           leftIcon={{ type: 'material-community', name: 'printer' }}
           rightIcon={<Icon type='material-community' name='printer-search' onPress={discoverPrinters} />}
@@ -118,6 +130,14 @@ const styles = StyleSheet.create({
     fontSize: 38,
     fontWeight: 'bold',
     maxWidth: '80%',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginVertical: 10,
+    backgroundColor: '#000', // Add background color
+    borderColor: '#000', // Add border color
+    borderWidth: 2, // Add border width
   },
   banner: {
     position: 'absolute',

@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet } from 'react-native';
-import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
-import { BarcodeFormat, scanBarcodes } from 'vision-camera-code-scanner';
-import Reanimated, {
-    runOnJS
-} from 'react-native-reanimated';
+import { StyleSheet, View } from 'react-native';
+// import { Camera, useFrameProcessor, useCameraDevices } from 'react-native-vision-camera';
+// import { BarcodeFormat, scanBarcodes } from 'vision-camera-code-scanner';
+// import Reanimated, {
+//     runOnJS
+// } from 'react-native-reanimated';
 import BarcodeMask from 'react-native-barcode-mask';
+import { Camera, CameraType } from 'react-native-camera-kit';
 import { useIsForeground } from './hooks/useIsForeground';
 import { useIsFocused } from '@react-navigation/core';
 import { useRef } from 'react';
 
-const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
+// const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 const CameraPage = ({ navigation }) => {
     const camera = useRef(null);
     const [isCameraInitialized, setIsCameraInitialized] = useState(false);
-    const devices = useCameraDevices();
-    const device = devices.back;
+    // const devices = useCameraDevices();
+    // const device = devices.back;
     const isFocussed = useIsFocused();
     const isForeground = useIsForeground();
     const isActive = isFocussed && isForeground;
@@ -24,32 +25,46 @@ const CameraPage = ({ navigation }) => {
         console.log('Camera initialized!');
         setIsCameraInitialized(true);
     }, []);
-    const onError = useCallback((error) => {
-        console.error(error);
-    }, []);
+    // const onError = useCallback((error) => {
+    //     console.error(error);
+    // }, []);
 
-    const onBarcodeDetected = useCallback((code) => {
-        navigation.navigate("ProductPage", { barcode: code })
-    }, [frameProcessor])
+    const onBarcodeDetected = useCallback((event) => {
+        navigation.navigate("ProductPage", { barcode: event.nativeEvent.codeStringValue })
+    }, [])
 
-    const frameProcessor = useFrameProcessor((frame) => {
-        'worklet';
-        const detectedBarcodes = scanBarcodes(frame, [BarcodeFormat.ALL_FORMATS], { checkInverted: true });
-        console.log(JSON.stringify(detectedBarcodes))
-        if (detectedBarcodes.length > 0) {
-            runOnJS(onBarcodeDetected)(detectedBarcodes[0].displayValue);
-        }
+    // const frameProcessor = useFrameProcessor((frame) => {
+    //     'worklet';
+    //     const detectedBarcodes = scanBarcodes(frame, [BarcodeFormat.ALL_FORMATS], { checkInverted: true });
+    //     console.log(JSON.stringify(detectedBarcodes))
+    //     if (detectedBarcodes.length > 0) {
+    //         runOnJS(onBarcodeDetected)(detectedBarcodes[0].displayValue);
+    //     }
 
-    }, [onBarcodeDetected]);
+    // }, [onBarcodeDetected]);
 
-    useEffect(() => {
-        console.log("test camera")
-    }, []);
+    // useEffect(() => {
+    //     console.log("test camera")
+    // }, []);
 
     return (
-        device != null && (
+       (
+        <View style={styles.container}>
             <>
-                <ReanimatedCamera
+         {  isActive && <><Camera
+         style = {styles.cameraStyle}
+  // Barcode props
+  scanBarcode={true}
+  onReadCode={onBarcodeDetected} //{(event) =>Alet('QR code found' + event.nativeEvent.codeStringValue)} // optional
+  showFrame={false} // (default false) optional, show frame with transparent layer (qr code or barcode will be read on this area ONLY), start animation for scanner, that stops when a code has been found. Frame always at center of the screen
+  laserColor='red' // (default red) optional, color of laser in scanner frame
+  frameColor='white' // (default white) optional, color of border of scanner frame
+/>
+{/* <BarcodeMask width={300} height={100} edgeBorderWidth={1} showAnimatedLine outerMaskOpacity={0.8} />  */}
+</>
+
+}
+                {/* <ReanimatedCamera
                     ref={camera}
                     style={StyleSheet.absoluteFill}
                     device={device}
@@ -60,18 +75,28 @@ const CameraPage = ({ navigation }) => {
                     frameProcessor={frameProcessor}
                     frameProcessorFps={1}
                     focusable={true}
-                />
-                <BarcodeMask width={300} height={100} edgeBorderWidth={1} showAnimatedLine outerMaskOpacity={0.8} />
+                /> */}
+                {/* <BarcodeMask width={300} height={100} edgeBorderWidth={1} showAnimatedLine outerMaskOpacity={0.8} /> */}
             </>
+            </View>
         )
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     barcodeTextURL: {
         fontSize: 20,
         color: 'white',
         fontWeight: 'bold',
+    },
+    cameraStyle: {
+        height: '30%',
+        width: '100%',
     }
 });
 

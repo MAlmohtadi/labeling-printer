@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, NativeModules } from 'react-native';
 import { connect } from 'react-redux';
 import MSSQL from 'react-native-mssql';
 import { Button, Card, Divider, Text } from '@rneui/base';
@@ -8,7 +8,7 @@ import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
 import { Dialog } from '@rneui/themed';
 
 import { SAFE_AREA_PADDING } from './Constants';
-
+const {XprinterHelperModule} = NativeModules;
 const ProductPage = ({ route, navigation, settingsReducer }) => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -39,6 +39,23 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
     const printLabel = async () => {
         // const name = 'اوه بوي بيكويت بالنكهة الفانيلا 38 غم';
         // const barcode = '6291003022852';
+        settingsReducer.printerType === 'طابعة zebra' ? await printZebraLabel() : await printXprinterLabel(); 
+  
+    }
+    const printXprinterLabel = async () => {
+        await setIsDisabled(true);
+        const { name, barcode, price } = product;
+        try {
+            XprinterHelperModule.printXprinter(settingsReducer.printerAddress,name, price + " JD", barcode)
+                    
+        } catch (err) {
+            alert(err.message)
+        }
+        
+        setIsDisabled(false)
+
+    }
+    const printZebraLabel = async () => {
         await setIsDisabled(true);
         const { name, barcode } = product;
         let width = 500;
@@ -64,18 +81,21 @@ const ProductPage = ({ route, navigation, settingsReducer }) => {
             ^FO${fontBlock + startText > width ? width : fontBlock + startText},5^AQN,28,^TBN,${width},100^PA1,1,1,1^FH\^CI17^F8^FD${name}^FS^CI0
             ^FT198,260^AQN,50,,TAH000^FD${product.price} JD^FS
             ^PQ1,0,1,Y^XZ`
-            RNZebraBluetoothPrinter.print(settingsReducer.printerAddress, zpl).then(result => {
+            await RNZebraBluetoothPrinter.print(settingsReducer.printerAddress, zpl).then(result => {
                 setIsDisabled(false)
             })
         } catch (err) {
             alert(err.message)
             setIsDisabled(false)
         }
+        setIsDisabled(false)
     }
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            getProductDetails(route.params?.barcode)
+           // setProduct({name: 'ملبس', barcode: route.params?.barcode, price: '40'})
+          //  setLoading(false)
+             getProductDetails(route.params?.barcode)
         });
         return unsubscribe;
     }, [navigation, route, settingsReducer, product]);

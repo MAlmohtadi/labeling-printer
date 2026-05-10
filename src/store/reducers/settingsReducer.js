@@ -7,6 +7,7 @@ const initialState = {
   database: '',
   store: '',
   printerAddress:'',
+  printerType:'',
   isConnected: false
 };
 

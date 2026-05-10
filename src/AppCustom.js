@@ -5,7 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import { Camera } from 'react-native-vision-camera';
+// import { Camera } from 'react-native-vision-camera';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
 
 import SettingsPage from './SettingsPage';
@@ -26,12 +26,13 @@ const AppCustom = () => {
 
   useEffect(() => {
 
-    Camera.getCameraPermissionStatus().then(setCameraPermission);
+    // Camera.getCameraPermissionStatus().then(setCameraPermission);
     RNZebraBluetoothPrinter
       .isEnabledBluetooth().then(setIsBluetoothEnabled);
     PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT).then(setBluetoothPermission);
     PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN).then(setBluetoothScanPermission);
     PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(setLocationPermission);
+    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.CAMERA).then(setCameraPermission);
   }, []);
 
 
@@ -41,11 +42,12 @@ const AppCustom = () => {
     return null;
   }
 
-  const showPermissionsPage = cameraPermission !== 'authorized'
-    || !isBluetoothEnabled
+  const showPermissionsPage = !cameraPermission || !isBluetoothEnabled
     || !bluetoothPermission
     || !bluetoothScanPermission
     || !locationPermission;
+  
+    console.log('showPermissionsPage', showPermissionsPage)
 
   return (<NavigationContainer>
     <Stack.Navigator

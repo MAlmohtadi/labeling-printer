@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { StyleSheet, View, Text, Image, Linking, PermissionsAndroid, Platform } from 'react-native';
-import { Camera } from 'react-native-vision-camera';
+// import { Camera } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING } from './Constants';
 import RNZebraBluetoothPrinter from 'react-native-zebra-bluetooth-printer';
 import BluetoothStateManager from 'react-native-bluetooth-state-manager';
@@ -17,11 +17,11 @@ const PermissionsPage = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const requestCameraPermission = useCallback(async () => {
     console.log('Requesting camera permission...');
-    const permission = await Camera.requestCameraPermission();
-    console.log(`Camera permission status: ${permission}`);
+    // const permission = await Camera.requestCameraPermission();
+    // console.log(`Camera permission status: ${permission}`);
 
-    if (permission === 'denied') await Linking.openSettings();
-    setPermissions({ ...permissions, 'android.permission.CAMERA': permission });
+    // if (permission === 'denied') await Linking.openSettings();
+    // setPermissions({ ...permissions, 'android.permission.CAMERA': permission });
   }, [JSON.stringify(permissions)]);
 
   const requestBluetoothPermission = useCallback(async () => {
